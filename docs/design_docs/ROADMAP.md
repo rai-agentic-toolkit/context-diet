@@ -123,6 +123,19 @@ The final phase before general availability is dedicated entirely to hardening, 
 * The repository features a fully integrated CI/CD pipeline automating the testing matrix.
 * The final README.md and CONTRIBUTING.md documents are published, clearly articulating the project's token economics philosophy and zero-dependency rules.
 
+### **Phase V1.2: Agentic Precision and Ecosystem Expansion**
+
+Following the stable V1.0 baseline, the framework shifts focus toward maximizing the signal-to-noise ratio for highly targeted autonomous agent workflows and expanding support for prevalent documentation and web modalities.
+
+**Advanced Python Scoping**
+The current `focus_on` mechanism operates module-wide. V1.2 introduces precise scope resolution via `LibCST` (e.g., `focus_on="Server.run"` or `focus_on=["run", "retry"]`). This requires tracking class hierarchy during AST traversal, allowing agents to preserve specific class methods while perfectly skeletonizing similarly named methods in adjacent classes.
+
+**Markdown and Web Modalities**
+To support the ingestion of massive project domains, the `MarkdownDietStrategy` will be introduced. Operating on header-based `##` traversal, it intelligently truncates irrelevant documentation sections while preserving structural headings. Concurrently, the heavily requested `TypeScriptAstDietStrategy` will be evaluated (likely via `tree-sitter` bindings behind a `[typescript]` packaging extra) to support JavaScript/TypeScript agent environments.
+
+**Tokenizer Tooling**
+Finally, an optional `context-diet[tiktoken]` packaging extra will be formalized, providing an immediate, drop-in accurate `token_counter` for OpenAI models, replacing the standard heuristic warning.
+
 ## **Test Strategy: The Corpus of Doom**
 
 To guarantee the execution determinism and resilience demanded by the project ethos, traditional "happy path" unit testing is entirely insufficient. The framework must be subjected to a highly adversarial testing matrix known as the "Corpus of Doom." This corpus consists of extreme edge-case files deliberately curated to break parsers, exhaust system memory, trigger hidden recursion limits, and simulate the chaotic reality of production data pipelines.30
@@ -225,6 +238,11 @@ To facilitate immediate engineering action and align the community with the road
 | TSK-010 | V0.3 | Develop ContentSniffer utilizing mimetypes heuristics and byte evaluation. | Medium | High. Automates the optimal strategy selection process for the end user. |
 | TSK-011 | V1.0 | Aggregate and integrate the comprehensive "Corpus of Doom" into automated CI/CD. | Medium | Critical. Mathematically guarantees deterministic stability prior to GA release. |
 | TSK-012 | V1.0 | Draft and publish comprehensive CONTRIBUTING.md enforcing zero-dependency rules. | Low | Medium. Enables structured, community-driven open-source growth and scale. |
+| TSK-013 | V1.2 | Implement `focus_on` class scope resolution via `LibCST` (e.g. `Server.run`). | High | High. Increases signal-to-noise ratio for precise LLM agent context targeting. |
+| TSK-014 | V1.2 | Support multiple targets in `focus_on` (e.g. `focus_on=["run", "retry"]`). | Medium | Medium. Allows agents to request multiple specific functions simultaneously. |
+| TSK-015 | V1.2 | Develop `MarkdownDietStrategy` for header-based document truncation. | Medium | High. Prunes massive documentation and README files down to relevant headers. |
+| TSK-016 | V1.2 | Develop `TypeScriptAstDietStrategy` utilizing structural logic for JS/TS context. | Extreme | High. Supports the massive JavaScript/TypeScript agent engineering ecosystem. |
+| TSK-017 | V1.2 | Create native `tiktoken` packaging extras integration (`context-diet[tiktoken]`). | Low | Medium. Off-the-shelf precise token counting instead of the generic heuristic. |
 
 The execution of this product strategy ensures that context-diet fundamentally solves the challenge of context window bloat. By enforcing a strict zero-dependency mandate, embracing execution determinism over probabilistic guessing, and proactively mitigating failures through the "Corpus of Doom," the framework is positioned to become the definitive open-source standard for intelligent LLM context optimization.
 
