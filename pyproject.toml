@@ -1,0 +1,96 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "context-diet"
+version = "0.1.0"
+description = "Deterministic syntactic context compression for LLMs"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Jesse Castro & Raven", email = "jesse@ravenagent.dev"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries",
+]
+# ZERO DEPENDENCIES FOR CORE PACKAGE
+dependencies = []
+
+[project.optional-dependencies]
+sql = ["sqlparse>=0.5"]
+yaml = ["ruamel.yaml>=0.18"]
+python_cst = ["libcst>=1.0"]
+dev = [
+    "pytest>=7.0",
+    "pre-commit>=3.0",
+    "ruff>=0.9",
+    "mypy>=1.14",
+    "bandit>=1.8",
+    "sqlparse>=0.5",
+    "ruamel.yaml>=0.18",
+    "libcst>=1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/rai-tools/context-diet"
+Repository = "https://github.com/rai-tools/context-diet"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+context_diet = ["py.typed"]
+
+# --- Ruff: lint + format ---
+[tool.ruff]
+target-version = "py310"
+line-length = 99
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "S",    # flake8-bandit (security)
+    "T20",  # flake8-print
+]
+ignore = [
+    "S101",  # use of assert (fine in tests)
+    "S603",  # subprocess call (not used here but common FP)
+    "B008",  # function call in default arg
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "S",    # all bandit/security rules — test files have intentional bad patterns
+    "T20",  # print statements are fine in tests
+]
+
+# --- Bandit: security linting ---
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv"]
+skips = ["B101"]  # assert statements — fine in library code
+
+# --- Mypy ---
+[tool.mypy]
+python_version = "3.10"
+strict = true
+ignore_missing_imports = true
+files = ["src/"]
+
+# --- pytest ---
+[tool.pytest.ini_options]
+testpaths = ["tests"]

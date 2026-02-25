@@ -1,0 +1,32 @@
+Metadata-Version: 2.4
+Name: context-diet
+Version: 0.1.0
+Summary: Deterministic syntactic context compression for LLMs
+Author-email: Jesse Castro & Raven <jesse@ravenagent.dev>
+License: MIT
+Project-URL: Homepage, https://github.com/rai-tools/context-diet
+Project-URL: Repository, https://github.com/rai-tools/context-diet
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Software Development :: Libraries
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Provides-Extra: sql
+Requires-Dist: sqlparse>=0.5; extra == "sql"
+Provides-Extra: yaml
+Requires-Dist: ruamel.yaml>=0.18; extra == "yaml"
+Provides-Extra: python-cst
+Requires-Dist: libcst>=1.0; extra == "python-cst"
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: pre-commit>=3.0; extra == "dev"
+Requires-Dist: ruff>=0.9; extra == "dev"
+Requires-Dist: mypy>=1.14; extra == "dev"
+Requires-Dist: bandit>=1.8; extra == "dev"
+Requires-Dist: sqlparse>=0.5; extra == "dev"
+Requires-Dist: ruamel.yaml>=0.18; extra == "dev"
+Requires-Dist: libcst>=1.0; extra == "dev"
