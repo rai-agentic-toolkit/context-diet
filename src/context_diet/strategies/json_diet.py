@@ -42,6 +42,9 @@ class JsonDietStrategy(DietStrategy):
         Parses a massive JSON array iteratively.
         Maintains O(max(object_size)) space complexity rather than O(array_size).
         Uses pointer arithmetic to prevent O(N^2) memory trashing from string slicing.
+        
+        Note: This manual state machine is built strictly for standard compliant JSON.
+        It explicitly does not support json5, comments, or trailing commas.
         """
         import re
 
@@ -87,7 +90,9 @@ class JsonDietStrategy(DietStrategy):
 
                 if tokens_used + item_tokens > budget and not first_item:
                     # If this single item breaks the budget, we stop the stream entirely right now.
-                    # We inject the closing bracket to guarantee syntactic validity.
+                    # We inject a tombstone warning and the closing bracket to guarantee syntactic validity.
+                    tombstone = ', {"__context_diet_warning__": "TRUNCATED"}'
+                    output += tombstone
                     output += "]"
                     break
 

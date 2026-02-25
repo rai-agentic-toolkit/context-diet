@@ -63,18 +63,5 @@ def distill(
 
     try:
         return strategy_instance.compress(content, budget, token_counter, **kwargs)
-    except (
-        ContextBudgetExceededError,
-        ValueError,
-        cst.ParserSyntaxError,
-        json.JSONDecodeError,
-    ) as e:
-        if auto_detected and strategy != "text":
-            audit_logger = kwargs.get("logger") or logging.getLogger(__name__)
-            audit_logger.warning(
-                f"Auto-detected strategy '{strategy}' failed: {e}. Falling back to plain text slicing.",
-                extra={"strategy": strategy, "error": str(e), "fallback": "text"},
-            )
-            fallback_class = StrategyRegistry.get_strategy("text")
-            return fallback_class().compress(content, budget, token_counter, **kwargs)
+    except Exception as e:
         raise e

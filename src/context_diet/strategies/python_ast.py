@@ -47,7 +47,8 @@ class _ScrubSkeletonTransformer(cst.CSTTransformer):
     def leave_FunctionDef(
         self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
     ) -> cst.FunctionDef:
-        if self.skeletonize:
+        is_focused = self.focus_on and original_node.name.value == self.focus_on
+        if self.skeletonize and not is_focused:
             # We don't focus-target in the current naive framework unless requested
             # Simply replace body with `...`
             ellipsis_stmt = cst.SimpleStatementLine(body=[cst.Expr(value=cst.Ellipsis())])
@@ -62,7 +63,8 @@ class _ScrubSkeletonTransformer(cst.CSTTransformer):
     def leave_AsyncFunctionDef(
         self, original_node: cst.AsyncFunctionDef, updated_node: cst.AsyncFunctionDef
     ) -> cst.AsyncFunctionDef:
-        if self.skeletonize:
+        is_focused = self.focus_on and original_node.name.value == self.focus_on
+        if self.skeletonize and not is_focused:
             ellipsis_stmt = cst.SimpleStatementLine(body=[cst.Expr(value=cst.Ellipsis())])
             new_body = updated_node.body.with_changes(body=[ellipsis_stmt])
             return updated_node.with_changes(body=new_body)
