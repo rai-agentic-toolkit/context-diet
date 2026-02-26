@@ -12,10 +12,11 @@ When providing context to an LLM, you are strictly bounded by context window tok
 
 ## Features
 
-- **Structural Parsers:** Understands `.py`, `.json`, `.yml`, and `.sql` natively.
+- **Structural Parsers:** Understands `.py`, `.json`, `.yml`, `.sql`, and `.log` natively.
 - **Python Skeletonization:** Strips docstrings, comments, and eventually skeletonizes method bodies while preserving the AST structural map.
 - **JSON Streaming:** Compresses massive JSON arrays object-by-object using pointers to prevent memory trashing.
 - **YAML Round-Trip:** Deletes comments while preserving original YAML configuration formatting perfectly.
+- **Log Compression:** Maintains multi-line Python stack trace continuity while stripping binary/UTF-8 pollution from application logs.
 - **Binary Search Plaintext:** Uses O(log N) slicing for generic text to hit exact budget limits with zero CPU thrashing.
 
 ## Installation
