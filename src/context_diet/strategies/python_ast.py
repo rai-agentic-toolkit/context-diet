@@ -86,6 +86,13 @@ class PythonAstDietStrategy(DietStrategy):
     ) -> str:
         """
         Calculates and iteratively applies scrub and skeleton logic to satisfy the budget.
+
+        Keyword Args:
+            focus_on (str | None): **Experimental.** Name of a single function to preserve
+                at full detail; all other functions in the same module are skeletonized.
+                Only works on top-level ``def`` and ``async def`` — does not support class
+                methods or arbitrary code regions. Behavior with nested functions or
+                decorators that rename the function is undefined. Subject to change.
         """
         focus_on = kwargs.get("focus_on")
         try:
