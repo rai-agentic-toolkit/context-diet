@@ -6,8 +6,8 @@ from context_diet.interfaces import DietStrategy
 
 class YamlDietStrategy(DietStrategy):
     """
-    Compresses YAML by removing comments, empty lines, and excessive indentation,
-    finally falling back to plain text slicing if still over budget.
+    Compresses YAML by removing comments, then progressively pruning nested depth
+    until the result fits within the token budget.
     """
 
     def compress(
@@ -19,11 +19,11 @@ class YamlDietStrategy(DietStrategy):
 
         from context_diet.interfaces import ContextBudgetExceededError
 
-        yaml = YAML(typ="rt")
-        yaml.default_flow_style = False
+        yaml_rt = YAML(typ="rt")
+        yaml_rt.default_flow_style = False
 
         try:
-            data = yaml.load(content)
+            data = yaml_rt.load(content)
         except Exception:
             raise ContextBudgetExceededError("Malformed YAML cannot be compressed.")
 
@@ -48,12 +48,51 @@ class YamlDietStrategy(DietStrategy):
 
         remove_comments(data)
 
-        # Safe round-trip implicitly drops all comments
         buf = io.StringIO()
-        yaml.dump(data, buf)
+        yaml_rt.dump(data, buf)
         scrubbed = buf.getvalue()
 
         if token_counter(scrubbed) <= budget:
             return scrubbed
 
+        # Comment stripping alone wasn't enough. Reload as plain Python objects
+        # (no round-trip metadata needed) and progressively prune depth.
+        yaml_safe = YAML(typ="safe")
+        try:
+            plain_data = yaml_safe.load(scrubbed)
+        except Exception:
+            raise ContextBudgetExceededError("YAML cannot be compressed.")
+
+        yaml_plain = YAML()
+        yaml_plain.default_flow_style = False
+
+        for max_depth in range(6, -1, -1):
+            pruned = self._mask_deep_nodes(plain_data, max_depth)
+            candidate_buf = io.StringIO()
+            yaml_plain.dump(pruned, candidate_buf)
+            candidate = candidate_buf.getvalue()
+            if token_counter(candidate) <= budget:
+                return candidate
+
         raise ContextBudgetExceededError(f"Minimum valid YAML exceeds budget ({budget} tokens).")
+
+    def _mask_deep_nodes(self, node: Any, max_depth: int, current_depth: int = 0) -> Any:
+        """Recursively collapse nodes deeper than max_depth into empty structures."""
+        if current_depth >= max_depth:
+            if isinstance(node, dict):
+                return {}
+            if isinstance(node, list):
+                return []
+            if isinstance(node, str):
+                return "..."
+            return node
+
+        if isinstance(node, dict):
+            return {
+                k: self._mask_deep_nodes(v, max_depth, current_depth + 1)
+                for k, v in node.items()
+            }
+        if isinstance(node, list):
+            return [self._mask_deep_nodes(item, max_depth, current_depth + 1) for item in node]
+
+        return node

@@ -93,19 +93,94 @@ def test_tab_indented_yaml_raises(strategy):
 
 
 # ---------------------------------------------------------------------------
-# Budget exceeded
+# Progressive depth pruning (the key consistency fix)
 # ---------------------------------------------------------------------------
 
 
-def test_yaml_exceeds_budget_raises(strategy):
-    content = "key: value\nother: data\n"
-    with pytest.raises(ContextBudgetExceededError, match="Minimum valid YAML exceeds budget"):
-        strategy.compress(content, budget=1, token_counter=default_token_heuristic)
+def test_yaml_nested_content_is_pruned_not_raised(strategy):
+    """Deep nested YAML that exceeds budget is pruned progressively, never raised."""
+    content = (
+        "server:\n"
+        "  database:\n"
+        "    host: localhost\n"
+        "    port: 5432\n"
+        "    pool:\n"
+        "      min: 2\n"
+        "      max: 20\n"
+        "      timeout: 30\n"
+        "  cache:\n"
+        "    host: redis\n"
+        "    port: 6379\n"
+    )
+    # Budget too small for full content but not zero
+    result = strategy.compress(content, budget=10, token_counter=default_token_heuristic)
+    assert result != ""
+    assert default_token_heuristic(result) <= 10
+
+
+def test_yaml_depth_pruning_result_is_valid_yaml(strategy):
+    """The pruned result must parse as valid YAML."""
+    from ruamel.yaml import YAML
+
+    content = (
+        "app:\n"
+        "  settings:\n"
+        "    debug: true\n"
+        "    workers: 4\n"
+        "    logging:\n"
+        "      level: INFO\n"
+        "      file: /var/log/app.log\n"
+    )
+    result = strategy.compress(content, budget=8, token_counter=default_token_heuristic)
+    yaml = YAML()
+    parsed = yaml.load(result)
+    assert parsed is not None
+
+
+def test_yaml_depth_pruning_preserves_top_level_keys(strategy):
+    """After pruning, top-level structure keys survive even if their values are collapsed."""
+    content = (
+        "database:\n"
+        "  host: localhost\n"
+        "  credentials:\n"
+        "    user: admin\n"
+        "    password: secret\n"
+        "logging:\n"
+        "  level: DEBUG\n"
+        "  handlers:\n"
+        "    - file\n"
+        "    - console\n"
+    )
+    result = strategy.compress(content, budget=10, token_counter=default_token_heuristic)
+    assert "database" in result or "logging" in result
+
+
+def test_yaml_list_structure_is_pruned_not_raised(strategy):
+    """A YAML list too large for budget is pruned to an empty list, not raised."""
+    content = "items:\n" + "".join(f"  - value_{i}\n" for i in range(50))
+    result = strategy.compress(content, budget=5, token_counter=default_token_heuristic)
+    assert result != ""
+    assert default_token_heuristic(result) <= 5
+
+
+# ---------------------------------------------------------------------------
+# Budget exceeded — truly irreducible
+# ---------------------------------------------------------------------------
+
+
+def test_yaml_raises_only_when_empty_structure_exceeds_budget(strategy):
+    """Raise only when even an empty {} structure cannot fit in budget.
+
+    The default heuristic (len // 4) gives 0 tokens for '{}\\n', so a custom
+    counter that charges ≥1 for any input is needed to exercise the raise path.
+    """
+    content = "key: value\n"
+    with pytest.raises(ContextBudgetExceededError):
+        strategy.compress(content, budget=0, token_counter=lambda _: 1)
 
 
 def test_yaml_barely_within_budget_does_not_raise(strategy):
     content = "k: v\n"
-    # Should succeed with a reasonable budget
     result = strategy.compress(content, budget=100, token_counter=default_token_heuristic)
     assert "k:" in result
 
